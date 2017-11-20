@@ -3,8 +3,12 @@ using System.Collections.Generic;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Globalization;
-#if (CORE || NETFX45)
+#if (CORE || NETFX)
+using System.Diagnostics;
+#endif
+#if NET45
 using System.Threading.Tasks;
+using System.Collections;
 #endif
 
 namespace FluentFTP {
@@ -12,6 +16,7 @@ namespace FluentFTP {
 	/// Extension methods related to FTP tasks
 	/// </summary>
 	public static class FtpExtensions {
+
 		/// <summary>
 		/// Converts the specified path into a valid FTP file system path
 		/// </summary>
@@ -21,7 +26,10 @@ namespace FluentFTP {
 			if (String.IsNullOrEmpty(path))
 				return "./";
 
-			path = Regex.Replace(path.Replace('\\', '/'), "[/]+", "/").TrimEnd('/');
+			path = path.Replace('\\', '/');
+			path = Regex.Replace(path, "[/]+", "/");
+			path = path.TrimEnd('/');
+
 			if (path.Length == 0)
 				path = "/";
 
@@ -63,14 +71,15 @@ namespace FluentFTP {
 		/// <returns>The parent directory path</returns>
 		public static string GetFtpDirectoryName(this string path) {
 			string tpath = (path == null ? "" : path.GetFtpPath());
-			int lastslash = -1;
 
 			if (tpath.Length == 0 || tpath == "/")
 				return "/";
 
-			lastslash = tpath.LastIndexOf('/');
+			int lastslash = tpath.LastIndexOf('/');
 			if (lastslash < 0)
 				return ".";
+			if (lastslash == 0)
+				return "/";
 
 			return tpath.Substring(0, lastslash);
 		}
@@ -109,6 +118,8 @@ namespace FluentFTP {
 			return System.IO.Path.GetFileName(path).GetFtpPath();
 		}*/
 
+		private static string[] FtpDateFormats = { "yyyyMMddHHmmss", "yyyyMMddHHmmss'.'f", "yyyyMMddHHmmss'.'ff", "yyyyMMddHHmmss'.'fff", "MMM dd  yyyy","MMM  d  yyyy","MMM dd HH:mm","MMM  d HH:mm" };
+
 		/// <summary>
 		/// Tries to convert the string FTP date representation into a <see cref="DateTime"/> object
 		/// </summary>
@@ -116,17 +127,9 @@ namespace FluentFTP {
 		/// <param name="style">UTC/Local Time</param>
 		/// <returns>A <see cref="DateTime"/> object representing the date, or <see cref="DateTime.MinValue"/> if there was a problem</returns>
 		public static DateTime GetFtpDate(this string date, DateTimeStyles style) {
-			string[] formats = new string[] { 
-                "yyyyMMddHHmmss", 
-                "yyyyMMddHHmmss.fff",
-                "MMM dd  yyyy",
-                "MMM  d  yyyy",
-                "MMM dd HH:mm",
-                "MMM  d HH:mm"
-            };
 			DateTime parsed;
 
-			if (DateTime.TryParseExact(date, formats, CultureInfo.InvariantCulture, style, out parsed)) {
+			if (DateTime.TryParseExact(date, FtpDateFormats, CultureInfo.InvariantCulture, style, out parsed)) {
 				return parsed;
 			}
 
@@ -166,7 +169,7 @@ namespace FluentFTP {
 			return String.Format("{0:0.#} {1}", len, sizePostfix[order]);
 		}
 		
-#if (CORE || NETFX45)
+#if NET45
         /// <summary>
         /// This creates a <see cref="System.Threading.Tasks.Task{TResult}"/> that represents a pair of begin and end methods
         /// that conform to the Asynchronous Programming Model pattern.  This extends the maximum amount of arguments from
@@ -223,9 +226,138 @@ namespace FluentFTP {
         /// </summary>
         /// <param name="options">The error handling options set</param>
         /// <returns>True if a valid combination, otherwise false</returns>
-	    public static bool ValidFtpErrorHandlingCombination(this FtpError options) {
+	    public static bool IsValidCombination(this FtpError options) {
 	        return options != (FtpError.Stop | FtpError.Throw) &&
 	               options != (FtpError.Throw | FtpError.Stop | FtpError.DeleteProcessed);
 	    }
-	}
+
+		/// <summary>
+		/// Checks if every character in the string is whitespace, or the string is null.
+		/// </summary>
+		public static bool IsNullOrWhiteSpace(string value) {
+			if (value == null) return true;
+
+			for (int i = 0; i < value.Length; i++) {
+				if (!Char.IsWhiteSpace(value[i])) return false;
+			}
+
+			return true;
+		}
+
+		/// <summary>
+		/// Checks if the string is null or 0 length.
+		/// </summary>
+		public static bool IsBlank(this string value) {
+			return value == null || value.Length == 0;
+		}
+
+#if NET45
+		/// <summary>
+		/// Checks if the array is null or 0 length.
+		/// </summary>
+		public static bool IsBlank(this IList value) {
+			return value == null || value.Count == 0;
+		}
+
+		/// <summary>
+		/// Checks if the array is null or 0 length.
+		/// </summary>
+		public static bool IsBlank(this IEnumerable value) {
+			if (value == null){
+				return true;
+			}
+			if (value is IList){
+				return ((IList)value).Count == 0;
+			}
+			if (value is byte[]){
+				return ((byte[])value).Length == 0;
+			}
+			return false;
+		}
+#endif
+
+		/// <summary>
+		/// Join the given strings by a delimiter.
+		/// </summary>
+		public static string Join(this string[] values, string delimiter) {
+			return string.Join(delimiter, values);
+		}
+
+		/// <summary>
+		/// Join the given strings by a delimiter.
+		/// </summary>
+		public static string Join(this List<string> values, string delimiter) {
+#if NET20 || NET35
+			return string.Join(delimiter, values.ToArray());
+#else
+            return string.Join(delimiter, values);
+#endif
+		}
+
+		/// <summary>
+		/// Adds a prefix to the given strings, returns a new array.
+		/// </summary>
+		public static string[] AddPrefix(this string[] values, string prefix, bool trim = false) {
+			List<string> results = new List<string>();
+			foreach (string v in values) {
+				string txt = prefix + (trim ? v.Trim() : v);
+				results.Add(txt);
+			}
+			return results.ToArray();
+		}
+		/// <summary>
+		/// Adds a prefix to the given strings, returns a new array.
+		/// </summary>
+		public static List<string> AddPrefix(this List<string> values, string prefix, bool trim = false) {
+			List<string> results = new List<string>();
+			foreach (string v in values) {
+				string txt = prefix + (trim ? v.Trim() : v);
+				results.Add(txt);
+			}
+			return results;
+		}
+
+		/// <summary>
+		/// Adds a prefix to the given strings, returns a new array.
+		/// </summary>
+		public static List<string> ItemsToString(this object[] args) {
+			List<string> results = new List<string>();
+			if (args == null) {
+				return results;
+			}
+			foreach (object v in args) {
+				string txt;
+				if (v == null){
+					txt = "null";
+				} else if (v is string) {
+					txt = ("\"" + v as string + "\"");
+				} else {
+					txt = v.ToString();
+				}
+				results.Add(txt);
+			}
+			return results;
+		}
+
+#if NET20 || NET35
+		public static bool HasFlag(this FtpHashAlgorithm flags, FtpHashAlgorithm flag) {
+			return (flags & flag) == flag;
+		}
+		public static bool HasFlag(this FtpCapability flags, FtpCapability flag) {
+			return (flags & flag) == flag;
+		}
+		public static bool HasFlag(this FtpVerify flags, FtpVerify flag) {
+			return (flags & flag) == flag;
+		}
+		public static bool HasFlag(this FtpError flags, FtpError flag) {
+			return (flags & flag) == flag;
+		}
+		public static void Restart(this Stopwatch watch) {
+			watch.Stop();
+			watch.Start();
+		}
+#endif
+
+
+    }
 }

@@ -1,115 +1,65 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProductVersion>10.0.0</ProductVersion>
-    <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{E963B766-56BF-4966-8917-88C1EE69D61A}</ProjectGuid>
-    <OutputType>Library</OutputType>
-    <RootNamespace>FluentFTP</RootNamespace>
-    <AssemblyName>FluentFTP</AssemblyName>
+    <TargetFrameworks>net20;net35;net40;net45;netstandard1.4;netstandard1.6</TargetFrameworks>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\net45\</OutputPath>
-    <DefineConstants>DEBUG;NETFX;NETFX45</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <ConsolePause>false</ConsolePause>
-    <DocumentationFile>bin\Debug\net45\FluentFTP.xml</DocumentationFile>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+
+  <PropertyGroup Condition="'$(TargetFramework)'=='net20' Or '$(TargetFramework)'=='net35' Or '$(TargetFramework)'=='net40' Or '$(TargetFramework)'=='net45'">
+    <DefineConstants>$(DefineConstants);NETFX</DefineConstants>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <DebugType>none</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>bin\Release\net45\</OutputPath>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <ConsolePause>false</ConsolePause>
-    <DocumentationFile>bin\Release\net45\FluentFTP.xml</DocumentationFile>
-    <PlatformTarget>AnyCPU</PlatformTarget>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
-    <DefineConstants>NETFX;NETFX45</DefineConstants>
+
+  <PropertyGroup Condition="'$(TargetFramework)'=='net20'">
+    <DefineConstants>$(DefineConstants);LINQBRIDGE_LIB</DefineConstants>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'DebugNET4|AnyCPU' ">
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\net40\</OutputPath>
-    <DefineConstants>DEBUG;NETFX</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <ConsolePause>false</ConsolePause>
-    <DocumentationFile>bin\Debug\net40\FluentFTP.xml</DocumentationFile>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+
+  <PropertyGroup Condition="'$(TargetFramework)'=='netstandard1.6' Or '$(TargetFramework)'=='netstandard1.4'">
+    <DefineConstants>$(DefineConstants);CORE</DefineConstants>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'ReleaseNET4|AnyCPU' ">
-    <DebugType>none</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>bin\Release\net40\</OutputPath>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <ConsolePause>false</ConsolePause>
-    <DocumentationFile>bin\Release\net40\FluentFTP.xml</DocumentationFile>
-    <PlatformTarget>AnyCPU</PlatformTarget>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
-    <DefineConstants>NETFX</DefineConstants>
+
+  <PropertyGroup Condition="'$(TargetFramework)'=='netstandard1.4'">
+    <DefineConstants>$(DefineConstants);CORE14;NO_SSL</DefineConstants>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'DebugNET2|AnyCPU'">
-    <DebugSymbols>true</DebugSymbols>
-    <OutputPath>bin\Debug\net20\</OutputPath>
-    <DefineConstants>DEBUG;NET2,NETFX,LINQBRIDGE_LIB</DefineConstants>
-    <DocumentationFile>bin\Debug\net20\FluentFTP.xml</DocumentationFile>
-    <DebugType>full</DebugType>
-    <PlatformTarget>AnyCPU</PlatformTarget>
-    <ErrorReport>prompt</ErrorReport>
-    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
-    <TargetFrameworkVersion>v2.0</TargetFrameworkVersion>
+
+  <PropertyGroup Condition="'$(TargetFramework)'=='net45' Or $(DefineConstants.Contains('CORE'))">
+    <DefineConstants>$(DefineConstants);ASYNC</DefineConstants>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'ReleaseNET2|AnyCPU'">
-    <DebugType>none</DebugType>
-    <OutputPath>bin\Release\net20\</OutputPath>
-    <DocumentationFile>bin\Release\net20\FluentFTP.xml</DocumentationFile>
-    <Optimize>true</Optimize>
-    <PlatformTarget>AnyCPU</PlatformTarget>
-    <ErrorReport>prompt</ErrorReport>
-    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
-    <DefineConstants>NET2,NETFX,LINQBRIDGE_LIB</DefineConstants>
-    <TargetFrameworkVersion>v2.0</TargetFrameworkVersion>
-  </PropertyGroup>
+
   <PropertyGroup>
-    <SignAssembly>true</SignAssembly>
+    <PackageId>FluentFTP</PackageId>
+    <Title>FluentFTP</Title>
+    <Description>An FTP and FTPS client for .NET &amp; .NET Standard, optimized for speed. Provides extensive FTP commands, File uploads/downloads, SSL/TLS connections, Automatic directory listing parsing, File hashing/checksums, File permissions/CHMOD, FTP proxies, UTF-8 support, Async/await support and more. Written entirely in C#, with no external dependencies.</Description>
+    <Authors>Robin Rodricks, J.P. Trosclair, FluentFTP Contributors</Authors>
+    <PackageLicenseUrl>https://github.com/robinrodricks/FluentFTP/blob/master/LICENSE.TXT</PackageLicenseUrl>
+    <PackageProjectUrl>https://github.com/robinrodricks/FluentFTP</PackageProjectUrl>
+    <Copyright>MIT License</Copyright>
+    <PackageTags>ftp,ftp-client,ftps,ssl,tls,unix,iis</PackageTags>
+    <VersionPrefix>19.1.2</VersionPrefix>
+    <DocumentationFile>bin\$(Configuration)\$(TargetFramework)\FluentFTP.xml</DocumentationFile>
+    <SignAssembly>True</SignAssembly>
     <AssemblyOriginatorKeyFile>sn.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
-  <ItemGroup>
-    <Reference Include="System" />
+
+  <PropertyGroup Condition="'$(Configuration)'=='Release'">
+    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+  </PropertyGroup>
+
+  <ItemGroup Condition="$(DefineConstants.Contains('NETFX'))">
     <Reference Include="System.Web" />
   </ItemGroup>
-  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
-  <ItemGroup>
-    <Compile Include="FtpListParser.cs" />
-    <Compile Include="NET2Compatibility.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="FtpClient.cs" />
-    <Compile Include="FtpDataStream.cs" />
-    <Compile Include="FtpEnums.cs" />
-    <Compile Include="FtpExceptions.cs" />
-    <Compile Include="FtpExtensions.cs" />
-    <Compile Include="FtpHash.cs" />
-    <Compile Include="FtpListItem.cs" />
-    <Compile Include="FtpReply.cs" />
-    <Compile Include="FtpSocketStream.cs" />
-    <Compile Include="FtpTrace.cs" />
-    <Compile Include="Proxy\FtpClientHttp11Proxy.cs" />
-    <Compile Include="Proxy\FtpClientProxy.cs" />
-    <Compile Include="Proxy\FtpClientUserAtHostProxy.cs" />
-    <Compile Include="Proxy\ProxyInfo.cs" />
+
+  <ItemGroup Condition="$(DefineConstants.Contains('CORE'))">
+    <PackageReference Include="System.Console" Version="4.3.0.0" />
+    <PackageReference Include="System.IO" Version="4.3.0.0" />
+    <PackageReference Include="System.Net.NameResolution" Version="4.3.0.0" />
+    <PackageReference Include="System.Net.Sockets" Version="4.3.0.0" />
+    <PackageReference Include="System.Runtime" Version="4.3.0.0" />
+    <PackageReference Include="System.Threading.Tasks" Version="4.3.0.0" />
   </ItemGroup>
-  <ItemGroup>
-    <None Include="FluentFTP.nuspec" />
-    <None Include="sn.snk" />
+
+  <ItemGroup Condition="'$(TargetFramework)'=='netstandard1.6'">
+    <PackageReference Include="System.Net.Security" Version="4.3.0.0" />
+    <PackageReference Include="System.Threading.Thread" Version="4.3.0.0" />
   </ItemGroup>
+
 </Project>

@@ -11,11 +11,11 @@ namespace FluentFTP {
 		/// </summary>
 		None,
 		/// <summary>
-		/// Encryption is used from the start of the connection, port 990
+		/// FTPS encryption is used from the start of the connection, port 990.
 		/// </summary>
 		Implicit,
 		/// <summary>
-		/// Connection starts in plain text and encryption is enabled
+		/// Connection starts in plain text and FTPS encryption is enabled
 		/// with the AUTH command immediately after the server greeting.
 		/// </summary>
 		Explicit
@@ -393,6 +393,11 @@ namespace FluentFTP {
 	[Flags]
 	public enum FtpListOption {
 		/// <summary>
+		/// Tries machine listings (MDTM command) if supported,
+		/// and if not then falls back to OS-specific listings (LIST command)
+		/// </summary>
+		Auto = 0,
+		/// <summary>
 		/// Load the modify date using MDTM when it could not
 		/// be parsed from the server listing. This only pertains
 		/// to servers that do not implement the MLSD command.
@@ -420,8 +425,8 @@ namespace FluentFTP {
 		/// </summary>
 		AllFiles = 4,
 		/// <summary>
-		/// Force the use of the LIST command even if MLSD (machine listings)
-		/// is supported by the server
+		/// Force the use of OS-specific listings (LIST command) even if
+		/// machine listings (MLSD command) are supported by the server
 		/// </summary>
 		ForceList = 8,
 		/// <summary>
@@ -429,11 +434,12 @@ namespace FluentFTP {
 		/// </summary>
 		NameList = 16,
 		/// <summary>
-		/// Combines the ForceList and NameList flags
+		/// Force the use of the NLST command (the slowest mode) even if machine listings
+		/// and OS-specific listings are supported by the server
 		/// </summary>
 		ForceNameList = ForceList | NameList,
 		/// <summary>
-		/// Try to dereference symbolic links
+		/// Try to dereference symbolic links, and stored the linked file/directory in FtpListItem.LinkObject
 		/// </summary>
 		DerefLinks = 32,
 		/// <summary>
@@ -443,8 +449,8 @@ namespace FluentFTP {
 		/// </summary>
 		UseLS = 64 | ForceList,
 		/// <summary>
-		/// Adds the -r option to the LIST command. Some servers may not
-		/// support this feature.
+		/// Gets files within subdirectories as well. Adds the -r option to the LIST command.
+		/// Some servers may not support this feature.
 		/// </summary>
 		Recursive = 128,
 		/// <summary>
@@ -491,7 +497,7 @@ namespace FluentFTP {
         /// <summary>
         /// Used for logging Debug or Verbose level messages
         /// </summary>
-        Debug,
+        Verbose,
         /// <summary>
         /// Used for logging Informational messages
         /// </summary>
@@ -568,6 +574,33 @@ namespace FluentFTP {
 		/// occur upon the failure of the final retry, and/or if combined with <see cref="FtpVerify.Delete"/>
 		/// the method will throw after the deletion is processed.
         /// </summary>
-        Throw = 4
+		Throw = 4,
+		/// <summary>
+		/// The checksum of the file is verified, if supported by the server.
+		/// If the checksum comparison fails then the method returns false and no other action is taken.
+		/// </summary>
+		OnlyChecksum = 8,
+    }
+
+    /// <summary>
+    /// Defines if additional verification and actions upon failure that 
+    /// should be performed when uploading/downloading files using the high-level APIs.  Ignored if the 
+    /// FTP server does not support any hashing algorithms.
+    /// </summary>
+	public enum FtpDate {
+        /// <summary>
+        /// The date is whatever the server returns, with no conversion performed.
+        /// </summary>
+        Original = 0,
+#if !CORE
+        /// <summary>
+		/// The date is converted to the local timezone, based on the TimeOffset property in FtpClient.
+        /// </summary>
+        Local = 1,
+#endif
+        /// <summary>
+        /// The date is converted to UTC, based on the TimeOffset property in FtpClient.
+        /// </summary>
+        UTC = 2,
     }
 }

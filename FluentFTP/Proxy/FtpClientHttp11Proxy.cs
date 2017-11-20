@@ -69,8 +69,10 @@ namespace FluentFTP.Proxy {
 			
 			FtpReply reply = new FtpReply();
 			string buf;
-			
-			lock( Lock ) {
+
+#if !CORE14
+            lock ( Lock ) {
+#endif
 				if( !IsConnected )
 					throw new InvalidOperationException( "No connection to the server has been established." );
 				
@@ -94,16 +96,19 @@ namespace FluentFTP.Proxy {
 
                     FtpTrace.WriteLine(FtpTraceLevel.Info, buf);
 
-					if (string.IsNullOrWhiteSpace(buf)) {
+					if (FtpExtensions.IsNullOrWhiteSpace(buf)) {
 						break;
 					}
 					
 					reply.InfoMessages += ( buf+"\n" );
 				}
 
-			}
+#if !CORE14
+            }
+#endif
 
 			return reply;
 		}
+
 	}
 }
